@@ -7,6 +7,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Todo.Web.Infra.Context;
+using Todo.Web.Infra.UnitOfWork;
+using Todo.Web.Infra.Repository;
+using Microsoft.EntityFrameworkCore;
+using Todo.Web.Domain.Services;
 
 namespace Todo.Web
 {
@@ -28,7 +33,13 @@ namespace Todo.Web
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
+            services.AddDbContext<DataContext>(options => options.UseSqlServer(Configuration.GetConnectionString("Default")));
             services.AddMvc();
+
+            services.AddScoped<DataContext, DataContext>();
+            services.AddTransient<UnitOfWork, UnitOfWork>();
+            services.AddTransient<TodoRepository, TodoRepository>();
+            services.AddTransient<TodoService, TodoService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -38,6 +49,12 @@ namespace Todo.Web
             loggerFactory.AddDebug();
 
             app.UseMvc();
+
+            if (env.IsDevelopment())
+            {
+                app.UseWelcomePage();
+                app.UseDeveloperExceptionPage();
+            }
         }
     }
 }

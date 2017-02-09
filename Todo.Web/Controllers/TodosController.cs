@@ -3,12 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Todo.Web.Domain.Services;
+using FluentValidation.Results;
 
 namespace Todo.Web.Controllers
 {
     [Route("api/[controller]")]
     public class TodosController : Controller
     {
+        private readonly TodoService _todoService;
+
+        public TodosController(TodoService todoService)
+        {
+            _todoService = todoService;
+        }
         // GET api/todos
         [HttpGet]
         public IEnumerable<string> Get()
@@ -25,8 +33,16 @@ namespace Todo.Web.Controllers
 
         // POST api/todos
         [HttpPost]
-        public void Post([FromBody]string value)
+        public IActionResult Post([FromBody]Domain.Entities.Todo todo)
         {
+            ValidationResult result = _todoService.Create(todo);
+
+            if (result.IsValid)
+            {
+                return Ok();
+            }
+
+            return StatusCode(422, result.Errors);
         }
 
         // PUT api/todos/5
