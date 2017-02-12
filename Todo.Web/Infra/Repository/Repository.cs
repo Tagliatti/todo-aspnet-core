@@ -22,6 +22,12 @@ namespace Todo.Web.Infra.Repository
             _context.Set<T>().Add(entity);
         }
 
+        public void Delete(int id)
+        {
+            var entity = _context.Set<T>().Find(id);
+            _context.Set<T>().Remove(entity);
+        }
+
         public void Delete(T entity)
         {
             _context.Set<T>().Remove(entity);
@@ -32,7 +38,7 @@ namespace Todo.Web.Infra.Repository
             return _context.Set<T>().Find(id);
         }
 
-        public List<T> List()
+        public IList<T> List()
         {
             return _context.Set<T>().ToList();
         }

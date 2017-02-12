@@ -1,10 +1,10 @@
-﻿using FluentValidation.Results;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Todo.Web.Domain.Validatiors.Todo;
 using Todo.Web.Infra.UnitOfWork;
+using Todo.Web.Domain.Validatiors;
 
 namespace Todo.Web.Domain.Services
 {
@@ -17,9 +17,9 @@ namespace Todo.Web.Domain.Services
             _unitOfWork = unitOfWork;
         }
 
-        public ValidationResult Create(Domain.Entities.Todo todo)
+        public ValidationResult Create(Entities.Todo todo)
         {
-            CreateTodoValidator validator = new CreateTodoValidator(todo);
+            TodoValidator validator = new TodoValidator(todo);
 
             if (validator.IsValid)
             {
@@ -27,7 +27,36 @@ namespace Todo.Web.Domain.Services
                 _unitOfWork.SaveChanges();
             }
 
-            return validator;
+            return validator.Results;
+        }
+
+        public ValidationResult Update(Entities.Todo todo)
+        {
+            UpdateTodoValidator validator = new UpdateTodoValidator(todo);
+
+            if (validator.IsValid)
+            {
+                _unitOfWork.TodoRepository.Update(todo);
+                _unitOfWork.SaveChanges();
+            }
+
+            return validator.Results;
+        }
+
+        public IList<Entities.Todo> List()
+        {
+            return _unitOfWork.TodoRepository.List();
+        }
+
+        public void Delete(Entities.Todo todo)
+        {
+            _unitOfWork.TodoRepository.Delete(todo);
+            _unitOfWork.SaveChanges();
+        }
+
+        public Entities.Todo Find(int id)
+        {
+            return _unitOfWork.TodoRepository.GetById(id);;
         }
     }
 }

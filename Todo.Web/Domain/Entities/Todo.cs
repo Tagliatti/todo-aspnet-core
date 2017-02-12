@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentValidation.Attributes;
 
 namespace Todo.Web.Domain.Entities
 {
     public class Todo
     {
-        protected Todo() { }
+        public Todo() { }
 
         public Todo(string title, string description)
         {
@@ -15,9 +16,22 @@ namespace Todo.Web.Domain.Entities
             Description = description;
         }
 
-        public int Id { get; private set; }
+        public Todo(int id, string title, string description)
+        {
+            Id = id;
+            Title = title;
+            Description = description;
+        }
 
-        public string Title { get; private set; }
-        public string Description { get; private set; }
+        public int Id { get; set; }
+
+        public string Title { get; set; }
+        public string Description { get; set; }
+
+        public void Change(Todo todo)
+        {
+            Title = todo.Title;
+            Description = todo.Description;
+        }
     }
 }

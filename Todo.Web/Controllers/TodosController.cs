@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Todo.Web.Domain.Services;
-using FluentValidation.Results;
+using Todo.Web.Domain.Validatiors;
 
 namespace Todo.Web.Controllers
 {
@@ -17,44 +17,81 @@ namespace Todo.Web.Controllers
         {
             _todoService = todoService;
         }
+
         // GET api/todos
         [HttpGet]
-        public IEnumerable<string> Get()
+        public IEnumerable<Domain.Entities.Todo> Get()
         {
-            return new string[] { "value1", "value2" };
+            return _todoService.List();
         }
 
         // GET api/todos/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public IActionResult Get(int id)
         {
-            return "value";
+            var todo = _todoService.Find(id);
+
+            if (todo is null)
+            {
+                return NotFound();
+            }
+
+            return Ok(todo);
         }
 
         // POST api/todos
         [HttpPost]
         public IActionResult Post([FromBody]Domain.Entities.Todo todo)
         {
-            ValidationResult result = _todoService.Create(todo);
+            todo.Id = 0;
 
-            if (result.IsValid)
+            ValidationResult validation = _todoService.Create(todo);
+
+            if (validation.IsValid)
             {
                 return Ok();
             }
 
-            return StatusCode(422, result.Errors);
+            return StatusCode(422, validation.Errors);
         }
 
         // PUT api/todos/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
+        public IActionResult Put(int id, [FromBody]Domain.Entities.Todo todo)
         {
+            var savedTodo = _todoService.Find(id);
+
+            if (savedTodo == null)
+            {
+                return NotFound();
+            }
+
+            savedTodo.Change(todo);
+
+            ValidationResult validation = _todoService.Update(savedTodo);
+
+            if (validation.IsValid)
+            {
+                return Ok();
+            }
+
+            return StatusCode(422, validation.Errors);
         }
 
         // DELETE api/todos/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public IActionResult Delete(int id)
         {
+            var todo = _todoService.Find(id);
+
+            if (todo == null)
+            {
+                return NotFound();
+            }
+
+            _todoService.Delete(todo);
+
+            return Ok();
         }
     }
 }
